@@ -46,7 +46,7 @@ export default function Home() {
       .from("todos")
       .select("*")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false }) as { data: Todo[] | null, error: any };
 
     if (error) {
       console.error('Error loading todos:', error);
