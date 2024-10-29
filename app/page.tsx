@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { Todo } from "@/types/todo";
@@ -17,17 +17,9 @@ export default function Home() {
   const { user } = useUser();
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      checkAndCreateProfile();
-      loadTodos();
-    }
-  }, [user]);
-
-  const checkAndCreateProfile = async () => {
+  const checkAndCreateProfile = useCallback(async () => {
     if (!user?.id) return;
 
-    // Check if profile exists
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('*')
@@ -35,7 +27,6 @@ export default function Home() {
       .single();
 
     if (!existingProfile) {
-      // Create new profile if it doesn't exist
       const newProfile: Partial<Profile> = {
         user_id: user.id,
         tier: 'free',
@@ -49,28 +40,34 @@ export default function Home() {
         console.error('Error creating profile:', error);
       }
     }
-  };
+  }, [user]);
 
-  const loadTodos = async () => {
+  const loadTodos = useCallback(async () => {
+    if (!user?.id) return;
+    
     const { data } = await supabase
       .from("todos")
       .select("*")
-      .eq("user_id", user?.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (data) {
-      // Sort the todos before setting state
       const sortedTodos = (data as Todo[]).sort((a, b) => {
-        // First sort by completion status
         if (a.is_completed !== b.is_completed) {
           return a.is_completed ? 1 : -1;
         }
-        // Then sort by creation date for todos with same completion status
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
       setTodos(sortedTodos);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      checkAndCreateProfile();
+      loadTodos();
+    }
+  }, [user, checkAndCreateProfile, loadTodos]);
 
   const addTodo = async (content: string) => {
     if (!user?.id) return;
