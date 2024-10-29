@@ -6,15 +6,17 @@ interface TodoItemProps {
   todo: Todo;
   onToggleComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  className?: string;
 }
 
-export function TodoItem({ todo, onToggleComplete, onDelete }: TodoItemProps) {
+export function TodoItem({ todo, onToggleComplete, onDelete, className }: TodoItemProps) {
   return (
     <div 
       className={cn(
         "p-4 border rounded-lg transition-colors",
         "hover:bg-gray-50",
-        todo.is_completed && "bg-gray-50"
+        todo.is_completed && "bg-gray-50",
+        className
       )}
     >
       <div className="flex items-center justify-between gap-4">

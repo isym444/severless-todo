@@ -90,7 +90,7 @@ export default function Home() {
       .from("todos")
       .insert([newTodo])
       .select()
-      .single();
+      .single() as { data: Todo | null; error: PostgrestError | null };
 
     if (error) {
       console.error('Error adding todo:', error.message);
@@ -99,7 +99,7 @@ export default function Home() {
 
     if (data) {
       // Add the new todo to the beginning of the array
-      setTodos((prev) => [data, ...prev]);
+      setTodos((prev) => [data as Todo, ...prev]);
     }
   };
 
