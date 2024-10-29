@@ -4,14 +4,11 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState, useCallback } from "react";
 import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
-import { Todo } from "@/types/todo";
-import { createClient } from "@supabase/supabase-js";
+import { Todo } from "@/types/database";
+import { createClient } from "@/utils/supabase/client";
 import { Profile } from "@/types/database";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function Home() {
   const { user } = useUser();
@@ -45,14 +42,19 @@ export default function Home() {
   const loadTodos = useCallback(async () => {
     if (!user?.id) return;
     
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("todos")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error('Error loading todos:', error);
+      return;
+    }
+
     if (data) {
-      const sortedTodos = (data as Todo[]).sort((a, b) => {
+      const sortedTodos = data.sort((a, b) => {
         if (a.is_completed !== b.is_completed) {
           return a.is_completed ? 1 : -1;
         }
