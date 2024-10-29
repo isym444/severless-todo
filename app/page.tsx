@@ -7,6 +7,7 @@ import { TodoItem } from "@/components/todo-item";
 import { Todo } from "@/types/database";
 import { createClient } from "@/utils/supabase/client";
 import { Profile } from "@/types/database";
+import { PostgrestError } from "@supabase/supabase-js";
 
 const supabase = createClient();
 
@@ -46,7 +47,10 @@ export default function Home() {
       .from("todos")
       .select("*")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false }) as { data: Todo[] | null, error: any };
+      .order("created_at", { ascending: false }) as { 
+        data: Todo[] | null; 
+        error: PostgrestError | null 
+      };
 
     if (error) {
       console.error('Error loading todos:', error);
