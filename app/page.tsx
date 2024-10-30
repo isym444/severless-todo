@@ -6,7 +6,6 @@ import { TodoForm } from "@/components/todo-form";
 import { TodoItem } from "@/components/todo-item";
 import { Todo } from "@/types/database";
 import { createClient } from "@/utils/supabase/client";
-import { Profile } from "@/types/database";
 import { PostgrestError } from "@supabase/supabase-js";
 import { checkAndCreateProfile } from "@/api/profiles";
 
