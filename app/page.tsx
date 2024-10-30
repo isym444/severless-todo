@@ -9,11 +9,10 @@ import { createClient } from "@/utils/supabase/client";
 import { Profile } from "@/types/database";
 import { PostgrestError } from "@supabase/supabase-js";
 
-const supabase = createClient();
-
 export default function Home() {
   const { user } = useUser();
   const [todos, setTodos] = useState<Todo[]>([]);
+  const supabase = createClient();
 
   const checkAndCreateProfile = useCallback(async () => {
     if (!user?.id) return;
