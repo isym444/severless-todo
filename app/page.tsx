@@ -8,36 +8,12 @@ import { Todo } from "@/types/database";
 import { createClient } from "@/utils/supabase/client";
 import { Profile } from "@/types/database";
 import { PostgrestError } from "@supabase/supabase-js";
+import { checkAndCreateProfile } from "@/api/profiles";
 
 export default function Home() {
   const { user } = useUser();
   const [todos, setTodos] = useState<Todo[]>([]);
   const supabase = createClient();
-
-  const checkAndCreateProfile = useCallback(async () => {
-    if (!user?.id) return;
-
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!existingProfile) {
-      const newProfile: Partial<Profile> = {
-        user_id: user.id,
-        tier: 'free',
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .insert([newProfile]);
-
-      if (error) {
-        console.error('Error creating profile:', error);
-      }
-    }
-  }, [user]);
 
   const loadTodos = useCallback(async () => {
     if (!user?.id) return;
@@ -67,13 +43,16 @@ export default function Home() {
     }
   }, [user]);
 
+  const checkProfile = useCallback(async () => {
+    if (!user?.id) return;
+    await checkAndCreateProfile(user.id);
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       const initializeUserData = async () => {
         try {
-          // First ensure profile exists
-          await checkAndCreateProfile();
-          // Then load todos
+          await checkProfile();
           await loadTodos();
         } catch (error) {
           console.error('Error initializing user data:', error);
@@ -82,7 +61,7 @@ export default function Home() {
 
       initializeUserData();
     }
-  }, [user, checkAndCreateProfile, loadTodos]);
+  }, [user, checkProfile, loadTodos]);
 
   const addTodo = async (content: string) => {
     if (!user?.id) return;
