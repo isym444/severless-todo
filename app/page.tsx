@@ -69,8 +69,18 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      checkAndCreateProfile();
-      loadTodos();
+      const initializeUserData = async () => {
+        try {
+          // First ensure profile exists
+          await checkAndCreateProfile();
+          // Then load todos
+          await loadTodos();
+        } catch (error) {
+          console.error('Error initializing user data:', error);
+        }
+      };
+
+      initializeUserData();
     }
   }, [user, checkAndCreateProfile, loadTodos]);
 
